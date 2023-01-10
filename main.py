@@ -3,15 +3,16 @@ import plotly.express as px
 from backend import get_data
 
 
+# Cosmetics site title and icon
 st.set_page_config(
     page_title="Weather forecast",
     page_icon="☀️"
 )
 
-
+# Menu selectors
 st.title("Weather Forecast for the Next Days")
 
-place = st.text_input("Place: ")
+place = st.text_input("Place: ", value="Warsaw")
 
 slider = st.slider(
     "Number of days",
@@ -21,11 +22,28 @@ slider = st.slider(
 option = st.selectbox("Sekect data to view", ("Temperature", "Sky"))
 
 st.subheader(f"{option} for next {slider} days in {place} ")
+try:
+    data = get_data(place, slider, option)
 
-data = get_data(place, slider, option)
-
-dates = ["2022-25-10", "2022-26-10", "2022-27-10"]
-temperatures = [10, 11, 15]
-temperatures = [slider * i for i in temperatures]
-figure = px.line(x=dates, y=temperatures, labels={"x": "Date", "y": "Temperature (C)"})
-st.plotly_chart(figure)
+    if option == "Temperature":
+        desc = "Temperature (C)"
+        
+        # Creating temperature plot
+        figure = px.line(x=data.keys(), y=data.values(), labels={"x": "Date", "y": f"{desc}"})
+        st.plotly_chart(figure)
+    else:
+        desc = "Sky Condition"
+        images = []
+        for description in data.values():
+            if description.lower() == "rain":
+                images.append("images/rain.png")
+            elif description.lower() == "clouds":
+                images.append("images/cloud.png")
+            elif description.lower() == "clear":
+                images.append("images/clear.png")
+                
+        st.image(images, width=115)
+except:
+    st.error("Given city is invalid. Pliss eneter existing city name")
+                
+    
